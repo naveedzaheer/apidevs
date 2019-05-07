@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "ApimServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the API Management"
+      }
+    }
+  },
+  "resources": [
+    {
+      "properties": {
+        "displayName": "Audit API Versions",
+        "description": "Audit API Versions",
+        "versionQueryName": "versionQuery",
+        "versionHeaderName": "versionHeader",
+        "versioningScheme": "Query"
+      },
+      "name": "[concat(parameters('ApimServiceName'), '/AuditVersionSet')]",
+      "type": "Microsoft.ApiManagement/service/api-version-sets",
+      "apiVersion": "2018-06-01-preview",
+      "dependsOn": []
+    },
+    {
+      "properties": {
+        "authenticationSettings": {
+          "subscriptionKeyRequired": false
+        },
+        "apiRevision": "1",
+        "apiVersion": "v1",
+        "apiRevisionDescription": "Audit API 1st revision",
+        "apiVersionDescription": "Audit API V1",
+        "apiVersionSetId": "[resourceId('Microsoft.ApiManagement/service/api-version-sets', parameters('ApimServiceName'), 'AuditVersionSet')]",
+        "subscriptionRequired": false,
+        "displayName": "Audit",
+        "path": "audit",
+        "protocols": ["https"]
+      },
+      "name": "[concat(parameters('ApimServiceName'), '/Audit')]",
+      "type": "Microsoft.ApiManagement/service/apis",
+      "apiVersion": "2018-06-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/api-version-sets', parameters('ApimServiceName'), 'AuditVersionSet')]"
+      ]
+    }
+  ]
+}

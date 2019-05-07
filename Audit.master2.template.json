@@ -1,0 +1,71 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "ApimServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the API Management"
+      }
+    }
+  },
+  "resources": [
+    {
+      "properties": {
+        "subscriptionRequired": false,
+        "path": "audit",
+        "contentValue": "https://nzauditapi-v1.azurewebsites.net/swagger/v1/swagger.json",
+        "contentFormat": "swagger-link-json"
+      },
+      "name": "[concat(parameters('ApimServiceName'), '/Audit')]",
+      "type": "Microsoft.ApiManagement/service/apis",
+      "apiVersion": "2018-06-01-preview",
+      "dependsOn": []
+    },
+    {
+      "properties": {
+        "policyContent": "<policies>\n  <inbound>\n    <base />\n  </inbound>\n  <backend>\n    <base />\n  </backend>\n  <outbound>\n    <set-header name=\"X-Powered-By\" exists-action=\"delete\" />\n    <set-header name=\"X-AspNet-Version\" exists-action=\"delete\" />\n    <base />\n  </outbound>\n  <on-error>\n    <base />\n  </on-error>\n</policies>",
+        "contentFormat": "rawxml"
+      },
+      "name": "[concat(parameters('ApimServiceName'), '/Audit/policy')]",
+      "type": "Microsoft.ApiManagement/service/apis/policies",
+      "apiVersion": "2018-06-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis', parameters('ApimServiceName'), 'Audit')]"
+      ]
+    },
+    {
+      "properties": {
+        "policyContent": "<policies>\n  <inbound>\n    <rate-limit-by-key calls=\"3\" renewal-period=\"15\" counter-key=\"@(context.Subscription.Id)\" />\n    <base />\n  </inbound>\n  <backend>\n    <base />\n  </backend>\n  <outbound>\n    <base />\n  </outbound>\n  <on-error>\n    <base />\n  </on-error>\n</policies>",
+        "contentFormat": "rawxml"
+      },
+      "name": "[concat(parameters('ApimServiceName'), '/Audit/addAudit/policy')]",
+      "type": "Microsoft.ApiManagement/service/apis/operations/policies",
+      "apiVersion": "2018-06-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis', parameters('ApimServiceName'), 'Audit')]"
+      ]
+    },
+    {
+      "properties": {
+        "policyContent": "<policies>\n  <inbound>\n    <rate-limit-by-key calls=\"3\" renewal-period=\"15\" counter-key=\"@(context.Subscription.Id)\" />\n    <base />\n  </inbound>\n  <backend>\n    <base />\n  </backend>\n  <outbound>\n    <base />\n  </outbound>\n  <on-error>\n    <base />\n  </on-error>\n</policies>",
+        "contentFormat": "rawxml"
+      },
+      "name": "[concat(parameters('ApimServiceName'), '/Audit/updateAudit/policy')]",
+      "type": "Microsoft.ApiManagement/service/apis/operations/policies",
+      "apiVersion": "2018-06-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis', parameters('ApimServiceName'), 'Audit')]"
+      ]
+    },
+    {
+      "properties": {},
+      "name": "[concat(parameters('ApimServiceName'), '/starter/Audit')]",
+      "type": "Microsoft.ApiManagement/service/products/apis",
+      "apiVersion": "2018-06-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.ApiManagement/service/apis', parameters('ApimServiceName'), 'Audit')]"
+      ]
+    }
+  ]
+}
